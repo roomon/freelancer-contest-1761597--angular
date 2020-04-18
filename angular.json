@@ -123,6 +123,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "pid1761597"
+    }
+  },
+  "defaultProject": "pid1761597",
+  "cli": {
+    "analytics": false
+  }
 }
