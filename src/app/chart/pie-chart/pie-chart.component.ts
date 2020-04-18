@@ -1,4 +1,4 @@
-import { Component, NgZone, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
 
 import * as m4Core from '@amcharts/amcharts4/core';
 import * as m4Charts from '@amcharts/amcharts4/charts';
