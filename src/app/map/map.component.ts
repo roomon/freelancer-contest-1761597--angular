@@ -193,6 +193,8 @@ export class MapComponent implements AfterViewInit, OnDestroy {
           color: colorSet.next(),
         },
       ];
+
+      this.chart = map;
     });
   }
 
