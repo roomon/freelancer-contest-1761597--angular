@@ -20,96 +20,51 @@ export class SpeedometerComponent implements AfterViewInit, OnDestroy {
     this.zone.runOutsideAngular(() => {
       // create chart
       const gaugeChart = m4Core.create('speedometer', m4Charts.GaugeChart);
-      gaugeChart.innerRadius = m4Core.percent(82);
+      gaugeChart.hiddenState.properties.opacity = 0; // this makes initial fade in effect
 
-      /**
-       * Normal axis
-       */
+      gaugeChart.innerRadius = -25;
 
       const axis = gaugeChart.xAxes.push(new m4Charts.ValueAxis());
       axis.min = 0;
       axis.max = 100;
       axis.strictMinMax = true;
-      axis.renderer.radius = m4Core.percent(80);
-      axis.renderer.inside = true;
-      axis.renderer.line.strokeOpacity = 1;
-      axis.renderer.ticks.template.disabled = false;
-      axis.renderer.ticks.template.strokeOpacity = 1;
-      axis.renderer.ticks.template.length = 10;
-      axis.renderer.grid.template.disabled = true;
-      axis.renderer.labels.template.radius = 40;
-      axis.renderer.labels.template.adapter.add('text', (text) => text + '%');
-
-      /**
-       * Axis for ranges
-       */
+      axis.renderer.grid.template.stroke = new m4Core.InterfaceColorSet().getFor(
+        'background'
+      );
+      axis.renderer.grid.template.strokeOpacity = 0.3;
 
       const colorSet = new m4Core.ColorSet();
 
-      const axis2 = gaugeChart.xAxes.push(new m4Charts.ValueAxis());
-      axis2.min = 0;
-      axis2.max = 100;
-      axis2.strictMinMax = true;
-      axis2.renderer.labels.template.disabled = true;
-      axis2.renderer.ticks.template.disabled = true;
-      axis2.renderer.grid.template.disabled = true;
-
-      const range0 = axis2.axisRanges.create();
+      const range0 = axis.axisRanges.create();
       range0.value = 0;
       range0.endValue = 50;
       range0.axisFill.fillOpacity = 1;
       range0.axisFill.fill = colorSet.getIndex(0);
+      range0.axisFill.zIndex = -1;
 
-      const range1 = axis2.axisRanges.create();
+      const range1 = axis.axisRanges.create();
       range1.value = 50;
-      range1.endValue = 100;
+      range1.endValue = 80;
       range1.axisFill.fillOpacity = 1;
       range1.axisFill.fill = colorSet.getIndex(2);
+      range1.axisFill.zIndex = -1;
 
-      /**
-       * Label
-       */
-
-      const label = gaugeChart.radarContainer.createChild(m4Core.Label);
-      label.isMeasured = false;
-      label.fontSize = 45;
-      label.x = m4Core.percent(50);
-      label.y = m4Core.percent(100);
-      label.horizontalCenter = 'middle';
-      label.verticalCenter = 'bottom';
-      label.text = '50%';
-
-      /**
-       * Hand
-       */
+      const range2 = axis.axisRanges.create();
+      range2.value = 80;
+      range2.endValue = 100;
+      range2.axisFill.fillOpacity = 1;
+      range2.axisFill.fill = colorSet.getIndex(4);
+      range2.axisFill.zIndex = -1;
 
       const hand = gaugeChart.hands.push(new m4Charts.ClockHand());
-      hand.axis = axis2;
-      hand.innerRadius = m4Core.percent(20);
-      hand.startWidth = 10;
-      hand.pin.disabled = true;
-      hand.value = 50;
 
-      hand.events.on('propertychanged', (event) => {
-        range0.endValue = event.target.value;
-        range1.value = event.target.value;
-        label.text = axis2.positionToValue(hand.currentPosition).toFixed(1);
-        axis2.invalidate();
-      });
+      // using gaugeChart.setTimeout method as the timeout will be disposed together with a chart
+      gaugeChart.setTimeout(randomValue, 2000);
 
-      setInterval(() => {
-        const value = Math.round(Math.random() * 100);
-        const animation = new m4Core.Animation(
-          hand,
-          {
-            property: 'value',
-            to: value,
-          },
-          1000,
-          m4Core.ease.cubicOut
-        );
-        animation.start();
-      }, 2000);
+      function randomValue() {
+        hand.showValue(Math.random() * 100, 1000, m4Core.ease.cubicOut);
+        gaugeChart.setTimeout(randomValue, 2000);
+      }
 
       this.chart = gaugeChart;
     });
