@@ -24,7 +24,9 @@ export class SpeedometerComponent implements AfterViewInit, OnDestroy {
 
       gaugeChart.innerRadius = -25;
 
-      const axis = gaugeChart.xAxes.push(new m4Charts.ValueAxis());
+      const axis = gaugeChart.xAxes.push(
+        new m4Charts.ValueAxis<m4Charts.AxisRendererCircular>()
+      );
       axis.min = 0;
       axis.max = 100;
       axis.strictMinMax = true;

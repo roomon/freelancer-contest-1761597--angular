@@ -78,7 +78,10 @@ export class LineChartComponent implements AfterViewInit, OnDestroy {
 
       series.tooltip.getFillFromObject = false;
       series.tooltip.adapter.add('x', (x, target) => {
-        if (series.tooltip.tooltipDataItem.valueY < 0) {
+        if (
+          (series.tooltip.tooltipDataItem as m4Charts.ColumnSeriesDataItem)
+            .valueY < 0
+        ) {
           series.tooltip.background.fill = lineChart.colors.getIndex(4);
         } else {
           series.tooltip.background.fill = lineChart.colors.getIndex(0);
