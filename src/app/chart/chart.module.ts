@@ -8,5 +8,6 @@ import { LineChartComponent } from './line-chart/line-chart.component';
 @NgModule({
   declarations: [PieChartComponent, BarChartComponent, LineChartComponent],
   imports: [CommonModule],
+  exports: [PieChartComponent, BarChartComponent, LineChartComponent],
 })
 export class ChartModule {}
