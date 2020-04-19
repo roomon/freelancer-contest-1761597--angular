@@ -1,8 +1,10 @@
 import { Component, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 import * as m4Core from '@amcharts/amcharts4/core';
 import * as m4Charts from '@amcharts/amcharts4/charts';
 import AnimatedTheme from '@amcharts/amcharts4/themes/animated';
+import { environment } from '../../environments/environment';
 
 m4Core.useTheme(AnimatedTheme);
 
@@ -14,7 +16,10 @@ m4Core.useTheme(AnimatedTheme);
 export class SpeedometerComponent implements AfterViewInit, OnDestroy {
   private chart: m4Charts.GaugeChart;
 
-  constructor(private readonly zone: NgZone) {}
+  constructor(
+    private readonly zone: NgZone,
+    private readonly http: HttpClient
+  ) {}
 
   ngAfterViewInit() {
     this.zone.runOutsideAngular(() => {
@@ -79,4 +84,8 @@ export class SpeedometerComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
+}
+
+interface SpeedometerData {
+  //
 }

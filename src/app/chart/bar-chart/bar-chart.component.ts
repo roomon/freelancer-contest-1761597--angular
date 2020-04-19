@@ -1,8 +1,10 @@
 import { Component, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 import * as m4Core from '@amcharts/amcharts4/core';
 import * as m4Charts from '@amcharts/amcharts4/charts';
 import AnimatedTheme from '@amcharts/amcharts4/themes/animated';
+import { environment } from '../../../environments/environment';
 
 m4Core.useTheme(AnimatedTheme);
 
@@ -14,7 +16,10 @@ m4Core.useTheme(AnimatedTheme);
 export class BarChartComponent implements AfterViewInit, OnDestroy {
   private chart: m4Charts.XYChart3D;
 
-  constructor(private readonly zone: NgZone) {}
+  constructor(
+    private readonly zone: NgZone,
+    private readonly http: HttpClient
+  ) {}
 
   ngAfterViewInit() {
     this.zone.runOutsideAngular(() => {
@@ -22,33 +27,14 @@ export class BarChartComponent implements AfterViewInit, OnDestroy {
       const xyChart = m4Core.create('bar-chart', m4Charts.XYChart3D);
 
       // add data
-      xyChart.data = [
-        {
-          year: 2005,
-          income: 23.5,
-          color: xyChart.colors.next(),
-        },
-        {
-          year: 2006,
-          income: 26.2,
-          color: xyChart.colors.next(),
-        },
-        {
-          year: 2007,
-          income: 30.1,
-          color: xyChart.colors.next(),
-        },
-        {
-          year: 2008,
-          income: 29.5,
-          color: xyChart.colors.next(),
-        },
-        {
-          year: 2009,
-          income: 24.6,
-          color: xyChart.colors.next(),
-        },
-      ];
+      this.http
+        .get<BarChartData[]>(environment.apiEndpoint + '/bar-chart')
+        .subscribe((data) => {
+          xyChart.data = data.map((each) => ({
+            ...each,
+            color: xyChart.colors.next(),
+          }));
+        });
 
       // Create axes
       const catAxis = xyChart.yAxes.push(new m4Charts.CategoryAxis());
@@ -79,4 +65,10 @@ export class BarChartComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
+}
+
+interface BarChartData {
+  year: number;
+  income: number;
+  color?: m4Core.Color;
 }

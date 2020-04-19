@@ -1,8 +1,10 @@
 import { Component, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 import * as m4Core from '@amcharts/amcharts4/core';
 import * as m4Charts from '@amcharts/amcharts4/charts';
 import AnimatedTheme from '@amcharts/amcharts4/themes/animated';
+import { environment } from '../../../environments/environment';
 
 m4Core.useTheme(AnimatedTheme);
 
@@ -14,29 +16,10 @@ m4Core.useTheme(AnimatedTheme);
 export class LineChartComponent implements AfterViewInit, OnDestroy {
   private chart: m4Charts.XYChart;
 
-  constructor(private readonly zone: NgZone) {}
-
-  private generateChartData() {
-    const chartData = [];
-    const firstDate = new Date();
-    firstDate.setDate(firstDate.getDate() - 200);
-    let visits = 1200;
-    for (let i = 0; i < 200; i++) {
-      // we create date objects here. In your data, you can have date strings
-      // and then set format of your dates using lineChart.dataDateFormat property,
-      // however when possible, use date objects, as this will speed up chart rendering.
-      const newDate = new Date(firstDate);
-      newDate.setDate(newDate.getDate() + i);
-
-      visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
-
-      chartData.push({
-        date: newDate,
-        visits,
-      });
-    }
-    return chartData;
-  }
+  constructor(
+    private readonly zone: NgZone,
+    private readonly http: HttpClient
+  ) {}
 
   ngAfterViewInit() {
     this.zone.runOutsideAngular(() => {
@@ -44,7 +27,11 @@ export class LineChartComponent implements AfterViewInit, OnDestroy {
       const lineChart = m4Core.create('line-chart', m4Charts.XYChart);
 
       // Add data
-      lineChart.data = this.generateChartData();
+      this.http
+        .get<LineChartData[]>(environment.apiEndpoint + '/line-chart')
+        .subscribe((data) => {
+          lineChart.data = data;
+        });
 
       // Create axes
       const dateAxis = lineChart.xAxes.push(new m4Charts.DateAxis());
@@ -100,4 +87,9 @@ export class LineChartComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
+}
+
+interface LineChartData {
+  date: Date;
+  visits: number;
 }

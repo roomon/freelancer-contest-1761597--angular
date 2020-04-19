@@ -1,8 +1,10 @@
 import { Component, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 
 import * as m4Core from '@amcharts/amcharts4/core';
 import * as m4Charts from '@amcharts/amcharts4/charts';
 import AnimatedTheme from '@amcharts/amcharts4/themes/animated';
+import { environment } from '../../../environments/environment';
 
 m4Core.useTheme(AnimatedTheme);
 
@@ -14,7 +16,10 @@ m4Core.useTheme(AnimatedTheme);
 export class PieChartComponent implements AfterViewInit, OnDestroy {
   private chart: m4Charts.PieChart3D;
 
-  constructor(private readonly zone: NgZone) {}
+  constructor(
+    private readonly zone: NgZone,
+    private readonly http: HttpClient
+  ) {}
 
   ngAfterViewInit() {
     this.zone.runOutsideAngular(() => {
@@ -24,44 +29,11 @@ export class PieChartComponent implements AfterViewInit, OnDestroy {
 
       pieChart.legend = new m4Charts.Legend();
 
-      pieChart.data = [
-        {
-          country: 'Lithuania',
-          litres: 501.9,
-        },
-        {
-          country: 'Czech Republic',
-          litres: 301.9,
-        },
-        {
-          country: 'Ireland',
-          litres: 201.1,
-        },
-        {
-          country: 'Germany',
-          litres: 165.8,
-        },
-        {
-          country: 'Australia',
-          litres: 139.9,
-        },
-        {
-          country: 'Austria',
-          litres: 128.3,
-        },
-        {
-          country: 'UK',
-          litres: 99,
-        },
-        {
-          country: 'Belgium',
-          litres: 60,
-        },
-        {
-          country: 'The Netherlands',
-          litres: 50,
-        },
-      ];
+      this.http
+        .get<PieChartData[]>(environment.apiEndpoint + '/pie-chart')
+        .subscribe((data) => {
+          pieChart.data = data;
+        });
 
       const pieSeries = pieChart.series.push(new m4Charts.PieSeries3D());
       pieSeries.dataFields.value = 'litres';
@@ -78,4 +50,9 @@ export class PieChartComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
+}
+
+interface PieChartData {
+  country: string;
+  litres: number;
 }
