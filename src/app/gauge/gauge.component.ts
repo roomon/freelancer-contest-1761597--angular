@@ -9,11 +9,11 @@ import { environment } from '../../environments/environment';
 m4Core.useTheme(AnimatedTheme);
 
 @Component({
-  selector: 'app-speedometer',
-  templateUrl: './speedometer.component.html',
-  styleUrls: ['./speedometer.component.scss'],
+  selector: 'app-gauge',
+  templateUrl: './gauge.component.html',
+  styleUrls: ['./gauge.component.scss'],
 })
-export class SpeedometerComponent implements AfterViewInit, OnDestroy {
+export class GaugeComponent implements AfterViewInit, OnDestroy {
   private chart: m4Charts.GaugeChart;
 
   constructor(
@@ -24,7 +24,7 @@ export class SpeedometerComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.zone.runOutsideAngular(() => {
       // create chart
-      const gaugeChart = m4Core.create('speedometer', m4Charts.GaugeChart);
+      const gaugeChart = m4Core.create('gauge', m4Charts.GaugeChart);
       gaugeChart.hiddenState.properties.opacity = 0; // this makes initial fade in effect
 
       gaugeChart.innerRadius = -25;
@@ -84,8 +84,4 @@ export class SpeedometerComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
-}
-
-interface SpeedometerData {
-  //
 }

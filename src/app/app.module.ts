@@ -4,11 +4,11 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { MapComponent } from './map/map.component';
-import { SpeedometerComponent } from './speedometer/speedometer.component';
+import { GaugeComponent } from './gauge/gauge.component';
 import { ChartModule } from './chart/chart.module';
 
 @NgModule({
-  declarations: [AppComponent, MapComponent, SpeedometerComponent],
+  declarations: [AppComponent, MapComponent, GaugeComponent],
   imports: [BrowserModule, HttpClientModule, ChartModule],
   providers: [],
   bootstrap: [AppComponent],

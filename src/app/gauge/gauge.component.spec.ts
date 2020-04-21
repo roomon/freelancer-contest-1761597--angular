@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SpeedometerComponent } from './speedometer.component';
+import { SpeedometerComponent } from './gauge.component';
 
 describe('SpeedometerComponent', () => {
   let component: SpeedometerComponent;
