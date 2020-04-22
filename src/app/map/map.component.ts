@@ -1,10 +1,18 @@
-import { Component, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  NgZone,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import * as socketio from 'socket.io-client';
 
 import * as m4Core from '@amcharts/amcharts4/core';
 import * as m4Maps from '@amcharts/amcharts4/maps';
 import AnimatedTheme from '@amcharts/amcharts4/themes/animated';
 import WORLD_MAP from '@amcharts/amcharts4-geodata/worldLow';
+
 import { environment } from '../../environments/environment';
 
 m4Core.useTheme(AnimatedTheme);
@@ -14,7 +22,9 @@ m4Core.useTheme(AnimatedTheme);
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
 })
-export class MapComponent implements AfterViewInit, OnDestroy {
+export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly URI = environment.api.uri + environment.api.endpoints.map;
+  private readonly socket = socketio(environment.socket);
   private chart: m4Maps.MapChart;
 
   constructor(
@@ -33,6 +43,29 @@ export class MapComponent implements AfterViewInit, OnDestroy {
     );
     animation.events.on('animationended', (event) => {
       this.animateBullet(event.target.object);
+    });
+  }
+
+  ngOnInit() {
+    // add data
+    const colorSet = new m4Core.ColorSet();
+    this.http.get<MapData[]>(this.URI).subscribe((data) => {
+      this.chart.data = data.map((each) => ({
+        ...each,
+        color: colorSet.next(),
+      }));
+    });
+
+    // listen for changes
+    this.socket.on('map-replace', (change) => {
+      const temp = this.chart.data;
+      const index = temp.findIndex(
+        (each) =>
+          each.latitude === change.updatedDocument.latitude &&
+          each.longitude === change.updatedDocument.longitude
+      );
+      temp[index].title = change.updatedDocument.name;
+      this.chart.data = temp;
     });
   }
 
@@ -83,17 +116,6 @@ export class MapComponent implements AfterViewInit, OnDestroy {
       circle2.events.on('inited', (event) => {
         this.animateBullet(event.target);
       });
-
-      const colorSet = new m4Core.ColorSet();
-
-      this.http
-        .get<MapData[]>(environment.apiEndpoint + '/map')
-        .subscribe((data) => {
-          imgSeries.data = data.map((each) => ({
-            ...each,
-            color: colorSet.next(),
-          }));
-        });
 
       this.chart = map;
     });

@@ -1,9 +1,17 @@
-import { Component, NgZone, AfterViewInit, OnDestroy } from '@angular/core';
+import {
+  Component,
+  NgZone,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import * as socketio from 'socket.io-client';
 
 import * as m4Core from '@amcharts/amcharts4/core';
 import * as m4Charts from '@amcharts/amcharts4/charts';
 import AnimatedTheme from '@amcharts/amcharts4/themes/animated';
+
 import { environment } from '../../environments/environment';
 
 m4Core.useTheme(AnimatedTheme);
@@ -13,13 +21,29 @@ m4Core.useTheme(AnimatedTheme);
   templateUrl: './gauge.component.html',
   styleUrls: ['./gauge.component.scss'],
 })
-export class GaugeComponent implements AfterViewInit, OnDestroy {
+export class GaugeComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly URI = environment.api.uri + environment.api.endpoints.gauge;
+  private readonly socket = socketio(environment.socket);
   private chart: m4Charts.GaugeChart;
+  private hand: m4Charts.ClockHand;
 
   constructor(
     private readonly zone: NgZone,
     private readonly http: HttpClient
   ) {}
+
+  ngOnInit() {
+    // add data
+    this.http.get<GaugeData>(this.URI).subscribe((data) => {
+      this.hand.showValue(data.usage, 1000, m4Core.ease.cubicOut);
+    });
+
+    // listen for data change
+    this.socket.on('gauge-replace', (change) => {
+      const temp = change.updatedDocument.usage;
+      this.hand.showValue(temp, 1000, m4Core.ease.cubicOut);
+    });
+  }
 
   ngAfterViewInit() {
     this.zone.runOutsideAngular(() => {
@@ -63,15 +87,7 @@ export class GaugeComponent implements AfterViewInit, OnDestroy {
       range2.axisFill.fill = colorSet.getIndex(4);
       range2.axisFill.zIndex = -1;
 
-      const hand = gaugeChart.hands.push(new m4Charts.ClockHand());
-
-      // using gaugeChart.setTimeout method as the timeout will be disposed together with a chart
-      gaugeChart.setTimeout(randomValue, 2000);
-
-      function randomValue() {
-        hand.showValue(Math.random() * 100, 1000, m4Core.ease.cubicOut);
-        gaugeChart.setTimeout(randomValue, 2000);
-      }
+      this.hand = gaugeChart.hands.push(new m4Charts.ClockHand());
 
       this.chart = gaugeChart;
     });
@@ -84,4 +100,9 @@ export class GaugeComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
+}
+
+interface GaugeData {
+  timestamp: Date;
+  usage: number;
 }
