@@ -4,7 +4,17 @@
 
 export const environment = {
   production: false,
-  apiEndpoint: 'https://1h36xsbtng.execute-api.ap-southeast-1.amazonaws.com/v_000'
+  api: {
+    uri: 'http://localhost:4444',
+    endpoints: {
+      chartBar: '/bar-chart',
+      chartLine: '/line-chart',
+      chartPie: '/pie-chart',
+      gauge: '/gauge',
+      map: '/map'
+    }
+  },
+  socket: 'http://localhost:5555'
 };
 
 /*
