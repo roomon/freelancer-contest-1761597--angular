@@ -6,6 +6,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 import * as socketio from 'socket.io-client';
 
 import * as m4Core from '@amcharts/amcharts4/core';
@@ -34,9 +35,22 @@ export class PieChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     // add data
-    this.http.get<PieChartData[]>(this.URI).subscribe((data) => {
-      this.chart.data = data;
-    });
+    this.http
+      .get<{ statusCode: number; body: string }>(this.URI)
+      .pipe(
+        map((resp) => {
+          const { body } = resp;
+          const array = JSON.parse(body);
+          const data = array.map((each) => ({
+            country: each.country,
+            litres: each.litres,
+          }));
+          return data;
+        })
+      )
+      .subscribe((data) => {
+        this.chart.data = data;
+      });
 
     // listen for changes
     this.socket.on('piechart-replace', (change) => {
@@ -72,9 +86,4 @@ export class PieChartComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-}
-
-interface PieChartData {
-  country: string;
-  litres: number;
 }

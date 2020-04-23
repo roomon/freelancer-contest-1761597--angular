@@ -6,6 +6,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 import * as socketio from 'socket.io-client';
 
 import * as m4Core from '@amcharts/amcharts4/core';
@@ -34,12 +35,23 @@ export class BarChartComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     // add data
-    this.http.get<BarChartData[]>(this.URI).subscribe((data) => {
-      this.chart.data = data.map((each) => ({
-        ...each,
-        color: this.chart.colors.next(),
-      }));
-    });
+    this.http
+      .get<{ statusCode: number; body: string }>(this.URI)
+      .pipe(
+        map((resp) => {
+          const { body } = resp;
+          const array = JSON.parse(body);
+          const data = array.map((each) => ({
+            year: each.year,
+            income: each.income,
+            color: this.chart.colors.next(),
+          }));
+          return data;
+        })
+      )
+      .subscribe((data) => {
+        this.chart.data = data;
+      });
 
     // listen for changes
     this.socket.on('barchart-replace', (change) => {
@@ -87,10 +99,4 @@ export class BarChartComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-}
-
-interface BarChartData {
-  year: number;
-  income: number;
-  color?: m4Core.Color;
 }

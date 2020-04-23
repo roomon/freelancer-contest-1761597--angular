@@ -6,6 +6,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 import * as socketio from 'socket.io-client';
 
 import * as m4Core from '@amcharts/amcharts4/core';
@@ -49,12 +50,24 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     // add data
     const colorSet = new m4Core.ColorSet();
-    this.http.get<MapData[]>(this.URI).subscribe((data) => {
-      this.chart.data = data.map((each) => ({
-        ...each,
-        color: colorSet.next(),
-      }));
-    });
+    this.http
+      .get<{ statusCode: number; body: string }>(this.URI)
+      .pipe(
+        map((resp) => {
+          const { body } = resp;
+          const array = JSON.parse(body);
+          const data = array.map((each) => ({
+            title: each.name,
+            latitude: each.latitude,
+            longitude: each.longitude,
+            color: colorSet.next(),
+          }));
+          return data;
+        })
+      )
+      .subscribe((data) => {
+        this.chart.data = data;
+      });
 
     // listen for changes
     this.socket.on('map-replace', (change) => {
@@ -72,16 +85,16 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     this.zone.runOutsideAngular(() => {
       // Create map instance
-      const map = m4Core.create('map', m4Maps.MapChart);
+      const mapChart = m4Core.create('map', m4Maps.MapChart);
 
       // Set map definition
-      map.geodata = WORLD_MAP;
+      mapChart.geodata = WORLD_MAP;
 
       // Set projection
-      map.projection = new m4Maps.projections.Miller();
+      mapChart.projection = new m4Maps.projections.Miller();
 
       // Create map polygon series
-      const pgSeries = map.series.push(new m4Maps.MapPolygonSeries());
+      const pgSeries = mapChart.series.push(new m4Maps.MapPolygonSeries());
 
       // Exclude Antartica
       pgSeries.exclude = ['AQ'];
@@ -96,10 +109,10 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
 
       // Create hover state and set alternative fill color
       const hs = pgTemplate.states.create('hover');
-      hs.properties.fill = map.colors.getIndex(0);
+      hs.properties.fill = mapChart.colors.getIndex(0);
 
       // Add image series
-      const imgSeries = map.series.push(new m4Maps.MapImageSeries());
+      const imgSeries = mapChart.series.push(new m4Maps.MapImageSeries());
       imgSeries.mapImages.template.propertyFields.longitude = 'longitude';
       imgSeries.mapImages.template.propertyFields.latitude = 'latitude';
       imgSeries.mapImages.template.tooltipText = '{title}';
@@ -117,7 +130,7 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
         this.animateBullet(event.target);
       });
 
-      this.chart = map;
+      this.chart = mapChart;
     });
   }
 
@@ -128,12 +141,4 @@ export class MapComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-}
-
-interface MapData {
-  title: string;
-  latitude: number;
-  longitude: number;
-  url?: string;
-  color: m4Core.Color;
 }

@@ -6,6 +6,7 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { map } from 'rxjs/operators';
 import * as socketio from 'socket.io-client';
 
 import * as m4Core from '@amcharts/amcharts4/core';
@@ -34,9 +35,19 @@ export class GaugeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     // add data
-    this.http.get<GaugeData>(this.URI).subscribe((data) => {
-      this.hand.showValue(data.usage, 1000, m4Core.ease.cubicOut);
-    });
+    this.http
+      .get<{ statusCode: number; body: string }>(this.URI)
+      .pipe(
+        map((resp) => {
+          const { body } = resp;
+          const data = JSON.parse(body);
+          delete data._id;
+          return data;
+        })
+      )
+      .subscribe((data) => {
+        this.hand.showValue(data.usage, 1000, m4Core.ease.cubicOut);
+      });
 
     // listen for data change
     this.socket.on('gauge-replace', (change) => {
@@ -100,9 +111,4 @@ export class GaugeComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
   }
-}
-
-interface GaugeData {
-  timestamp: Date;
-  usage: number;
 }
