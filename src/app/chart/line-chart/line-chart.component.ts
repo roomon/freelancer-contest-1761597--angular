@@ -13,7 +13,7 @@ import * as m4Core from '@amcharts/amcharts4/core';
 import * as m4Charts from '@amcharts/amcharts4/charts';
 import AnimatedTheme from '@amcharts/amcharts4/themes/animated';
 
-import { environment } from '../../../environments/environment';
+import { environment } from 'src/environments/environment';
 
 m4Core.useTheme(AnimatedTheme);
 

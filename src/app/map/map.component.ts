@@ -14,7 +14,7 @@ import * as m4Maps from '@amcharts/amcharts4/maps';
 import AnimatedTheme from '@amcharts/amcharts4/themes/animated';
 import WORLD_MAP from '@amcharts/amcharts4-geodata/worldLow';
 
-import { environment } from '../../environments/environment';
+import { environment } from 'src/environments/environment';
 
 m4Core.useTheme(AnimatedTheme);
 
